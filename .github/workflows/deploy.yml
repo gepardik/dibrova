@@ -1,4 +1,4 @@
-name: Deploy dist to branch
+name: Deploy to deploy branch
 
 on:
   push:
@@ -9,17 +9,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Deploy dist to branch
+      - name: Deploy to deploy branch
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git checkout --orphan deploy
-          git rm -rf .
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git checkout deploy || git checkout -b deploy
+          git reset --hard main
+          git rm -rf . --quiet
+          git checkout main -- dist
           mv dist/* .
-          rmdir dist
+          rm -rf dist
           git add .
-          git commit -m "Deploy build from main"
+          git commit -m "Deploy changes" || echo "No changes to deploy"
           git push -f origin deploy
