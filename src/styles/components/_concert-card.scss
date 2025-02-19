@@ -1,0 +1,40 @@
+@use "../variables" as *;
+
+.concert-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &__image {
+    width: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__content {
+    padding: 1rem;
+  }
+
+  &__title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: $text-color;
+    line-height: 1.4;
+    font-weight: normal;
+  }
+
+  &__datetime {
+    margin: 0;
+    color: $secondary-color;
+    font-size: 0.875rem;
+  }
+} 
