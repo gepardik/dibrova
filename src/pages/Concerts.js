@@ -21,6 +21,7 @@ const Concerts = () => {
         const data = await response.json();
         setUpcomingConcerts(data.upcoming);
         setPastConcerts(data.past);
+        setActiveTab(data.upcoming.length > 0 ? 'upcoming' : 'past');
         setError(null);
       } catch (err) {
         setError(err.message);

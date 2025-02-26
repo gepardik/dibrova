@@ -11,8 +11,9 @@ const Home = () => {
       </div>
       <img src="/images/oak_leafe.svg" alt="" className="home__background-leaf" aria-hidden="true" />
       <div className="home__content">
-        <h1 className="home__title">{t('home.title')}</h1>
+        <h1 className="home__title" translate='no'>{t('home.title')}</h1>
         <div 
+          translate="no"
           className="home__description"
           dangerouslySetInnerHTML={{ __html: t('home.description') }}
         />

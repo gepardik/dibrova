@@ -20,6 +20,11 @@ const Navbar = () => {
     setIsLangMenuOpen(!isLangMenuOpen);
   };
 
+  // Функция для получения короткого кода языка
+  const getShortLangCode = (langCode) => {
+    return langCode.split('-')[0].toUpperCase();
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar__container">
@@ -34,21 +39,21 @@ const Navbar = () => {
         </div>
         
         <div className={`navbar__menu ${isMenuOpen ? 'active' : ''}`}>
-          <Link to="/" className="navbar__link" onClick={() => setIsMenuOpen(false)}>{t('nav.home')}</Link>
-          <Link to="/concerts" className="navbar__link" onClick={() => setIsMenuOpen(false)}>{t('nav.concerts')}</Link>
-          <Link to="/contact" className="navbar__link" onClick={() => setIsMenuOpen(false)}>{t('nav.contact')}</Link>
+          <Link to="/" className="navbar__link" onClick={() => setIsMenuOpen(false)} translate="no">{t('nav.home')}</Link>
+          <Link to="/concerts" className="navbar__link" onClick={() => setIsMenuOpen(false)} translate="no">{t('nav.concerts')}</Link>
+          <Link to="/contact" className="navbar__link" onClick={() => setIsMenuOpen(false)} translate="no">{t('nav.contact')}</Link>
         </div>
 
-        <div className={`navbar__lang ${isMenuOpen ? 'active' : ''}`}>
+        <div className={`navbar__lang ${isMenuOpen ? 'active' : ''}`} translate="no">
           <button className="navbar__lang-toggle" onClick={toggleLangMenu}>
-            {i18n.language.toUpperCase()}
+            {getShortLangCode(i18n.language)}
             <i className={`fas fa-chevron-${isLangMenuOpen ? 'up' : 'down'}`}></i>
           </button>
           <div className={`navbar__lang-dropdown ${isLangMenuOpen ? 'active' : ''}`}>
-            <button onClick={() => changeLanguage('et')}>ET</button>
-            <button onClick={() => changeLanguage('uk')}>UK</button>
-            <button onClick={() => changeLanguage('ru')}>RU</button>
-            <button onClick={() => changeLanguage('en')}>EN</button>
+            <button onClick={() => changeLanguage('et')} translate="no">ET</button>
+            <button onClick={() => changeLanguage('uk')} translate="no">UK</button>
+            <button onClick={() => changeLanguage('ru')} translate="no">RU</button>
+            <button onClick={() => changeLanguage('en')} translate="no">EN</button>
           </div>
         </div>
 
