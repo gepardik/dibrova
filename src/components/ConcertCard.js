@@ -8,11 +8,6 @@ const ConcertCard = ({ concert }) => {
     navigate(`/concerts/${concert.id}`);
   };
 
-  // Форматируем время, убирая секунды
-  const formatTime = (timeString) => {
-    return timeString.replace(/:\d{2}$/, '');
-  };
-
   return (
     <div 
       className="concert-card"
@@ -26,14 +21,14 @@ const ConcertCard = ({ concert }) => {
       }}
     >
       <img 
-        src={`/${concert.image_path}`}
+        src={concert.image}
         alt={concert.title} 
         className="concert-card__image"
       />
       <div className="concert-card__content">
         <h3 className="concert-card__title">{concert.title}</h3>
         <p className="concert-card__datetime">
-          {concert.date}, {formatTime(concert.time)}
+          {concert.date}, {concert.time}
         </p>
         <p className="concert-card__venus">
           {concert.venue}

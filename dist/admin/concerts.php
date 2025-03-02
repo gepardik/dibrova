@@ -1,8 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once('../config.php');
+require_once '../config.php';
 
 // Проверяем авторизацию
 if (!isAdminLoggedIn()) {
@@ -30,89 +27,112 @@ try {
     die('Database error: ' . $e->getMessage());
 }
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Управление концертами</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление концертами | DIBROVA</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: #D9D9D9;
         }
         .header {
+            background-color: #1C2824;
+            color: white;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
         }
-        .content {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .actions {
+            margin-bottom: 2rem;
         }
         .btn {
             display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
+            padding: 0.8rem 1.5rem;
+            background-color: #536C63;
             color: white;
             text-decoration: none;
             border-radius: 4px;
             border: none;
             cursor: pointer;
+            font-size: 1rem;
         }
-        .btn-danger {
-            background-color: #dc3545;
+        .btn:hover {
+            background-color: #3f524a;
         }
-        .btn-success {
-            background-color: #28a745;
-        }
-        table {
+        .concerts-table {
             width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 1rem;
         }
-        th, td {
-            padding: 12px;
+        .concerts-table th,
+        .concerts-table td {
+            padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eee;
         }
-        th {
-            background-color: #f8f9fa;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
+        .concerts-table th {
+            background-color: #f8f8f8;
+            font-weight: 600;
+            color: #1C2824;
         }
         .status {
-            padding: 5px 10px;
-            border-radius: 3px;
-            font-size: 14px;
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
         }
         .status-active {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: #e6f4ea;
+            color: #1e7e34;
         }
         .status-inactive {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: #feeced;
+            color: #dc3545;
+        }
+        .action-links a {
+            color: #536C63;
+            text-decoration: none;
+            margin-right: 1rem;
+        }
+        .action-links a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <header class="header">
         <h1>Управление концертами</h1>
-        <div>
+        <a href="index.php">Вернуться в админ-панель</a>
+    </header>
+
+    <div class="container">
+        <div class="actions">
             <a href="concert-form.php" class="btn">Добавить концерт</a>
-            <a href="index.php" class="btn" style="margin-left: 10px;">Назад</a>
         </div>
-    </div>
-    
-    <div class="content">
-        <table>
+
+        <table class="concerts-table">
             <thead>
                 <tr>
                     <th>Название</th>
@@ -124,34 +144,30 @@ try {
                 </tr>
             </thead>
             <tbody>
+                <?php foreach ($concerts as $concert): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($concert['title_ru']); ?></td>
+                        <td><?php echo date('d.m.Y', strtotime($concert['date'])); ?></td>
+                        <td><?php echo date('H:i', strtotime($concert['time'])); ?></td>
+                        <td><?php echo htmlspecialchars($concert['venue_ru']); ?></td>
+                        <td>
+                            <span class="status <?php echo $concert['is_active'] ? 'status-active' : 'status-inactive'; ?>">
+                                <?php echo $concert['is_active'] ? 'Активен' : 'Неактивен'; ?>
+                            </span>
+                        </td>
+                        <td class="action-links">
+                            <a href="concert-form.php?id=<?php echo $concert['id']; ?>">Редактировать</a>
+                            <a href="concert-toggle.php?id=<?php echo $concert['id']; ?>" 
+                               onclick="return confirm('Вы уверены?')">
+                                <?php echo $concert['is_active'] ? 'Деактивировать' : 'Активировать'; ?>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
                 <?php if (empty($concerts)): ?>
                     <tr>
                         <td colspan="6" style="text-align: center;">Нет добавленных концертов</td>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($concerts as $concert): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($concert['title_ru']); ?></td>
-                            <td><?php echo date('d.m.Y', strtotime($concert['date'])); ?></td>
-                            <td><?php echo date('H:i', strtotime($concert['time'])); ?></td>
-                            <td><?php echo htmlspecialchars($concert['venue_ru']); ?></td>
-                            <td>
-                                <span class="status <?php echo $concert['is_active'] ? 'status-active' : 'status-inactive'; ?>">
-                                    <?php echo $concert['is_active'] ? 'Активен' : 'Неактивен'; ?>
-                                </span>
-                            </td>
-                            <td class="actions">
-                                <a href="concert-form.php?id=<?php echo $concert['id']; ?>" class="btn">
-                                    Редактировать
-                                </a>
-                                <a href="concert-toggle.php?id=<?php echo $concert['id']; ?>" 
-                                   class="btn <?php echo $concert['is_active'] ? 'btn-danger' : 'btn-success'; ?>"
-                                   onclick="return confirm('Вы уверены?')">
-                                    <?php echo $concert['is_active'] ? 'Деактивировать' : 'Активировать'; ?>
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
         </table>

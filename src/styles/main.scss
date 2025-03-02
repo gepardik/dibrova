@@ -1,6 +1,14 @@
 @use "sass:color";
 @use "variables" as *;
 @use "components/concert-card";
+@use "components/album-card";
+@use "components/album-modal";
+
+// Pages
+@use "pages/home";
+@use "pages/concerts";
+@use "pages/contact";
+@use "pages/gallery";
 
 // Variables
 $color-bg: #D9D9D9;
@@ -41,6 +49,15 @@ p {
 
 ul {
   list-style-position: inside;
+}
+
+h1 {
+    font-size: 3.5rem;
+    margin-bottom: 2rem;
+    color: $color-bg;
+    font-family: 'Great Vibes', cursive;
+    line-height: 1.2;
+    text-align: center;
 }
 
 // Navbar styles
@@ -137,6 +154,7 @@ ul {
       letter-spacing: 0.05em;
       font-weight: 500;
       font-size: 16px;
+      border-radius: 4px;
 
       i {
         font-size: 0.75rem;
@@ -293,7 +311,7 @@ ul {
     opacity: 0.5;
 
     @media (max-width: $tablet) {
-      top: 70%;
+      top: unset;
       right: -300px;
       rotate: 300deg;
     }
@@ -334,7 +352,7 @@ ul {
 // Concerts page styles
 .concerts {
   width: 100%;
-  margin: 0;
+  margin: 0 auto;
   padding: 2rem 0;
 
   @media (max-width: $mobile) {
@@ -544,7 +562,6 @@ ul {
   }
 
   &__title {
-    font-size: 2.5rem;
     margin-bottom: 1.5rem;
     color: $color-text;
 
@@ -700,14 +717,7 @@ button:disabled {
     padding: 1rem;
   }
 
-  &__container {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-  }
-
-  &__back {
+  &__back-button {
     padding: 1rem 2rem;
     background: none;
     border: none;
@@ -729,12 +739,20 @@ button:disabled {
 
   &__content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "image metadata"
+      "description description";
     gap: 2rem;
-    padding: 2rem;
+    padding: 3rem 2rem 6rem;
+    background-color: #fff;
+    border-radius: 8px;
+    padding-bottom: 2rem;
 
     @media (max-width: $tablet) {
-      grid-template-columns: 1fr;
+      grid-template-areas: 
+      "image"
+      "metadata"
+      "description";
       padding: 1rem;
     }
   }
@@ -744,6 +762,20 @@ button:disabled {
     aspect-ratio: 3/4;
     overflow: hidden;
     border-radius: 8px;
+    grid-area: image;
+  }
+
+  &__metadata {
+    grid-area: metadata;
+    margin-top: 100px;
+  }
+
+  &__description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: $color-text;
+    grid-area: description;
+    max-width: 800px;
   }
 
   &__image {
@@ -762,6 +794,7 @@ button:disabled {
     font-size: 2.5rem;
     color: $color-text;
     margin: 0;
+    text-align: left;
 
     @media (max-width: $mobile) {
       font-size: 2rem;
@@ -773,12 +806,6 @@ button:disabled {
       margin: 0.5rem 0;
       font-size: 1.1rem;
     }
-  }
-
-  &__description {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: $color-text;
   }
 
   &__button {
@@ -819,8 +846,16 @@ button:disabled {
 
   main {
     flex: 1 0 auto;
-    &:has(.concerts) {
-      background-color: $color-accent;
+    background-color: $color-accent;
+    &:has(.home),
+    &:has(.concert-details) {
+      background-color: $color-bg;
+    }
+    &:has(.gallery) {
+      background-image: url('/images/tree.svg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
   }
 } 

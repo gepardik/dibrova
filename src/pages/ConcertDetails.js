@@ -73,8 +73,8 @@ const ConcertDetails = () => {
         // Преобразуем поля для соответствия ожидаемому формату
         concertData = {
           ...concertData,
-          image: concertData.image_path ? `/${concertData.image_path}` : null,
-          ticketLink: concertData.ticket_link || null
+          image: concertData.image ? `/${concertData.image}` : null,
+          ticketLink: concertData.ticketLink || null
         };
 
         console.log('Setting concert data:', concertData);
@@ -144,31 +144,34 @@ const ConcertDetails = () => {
           </div>
         )}
 
-        <h1 className="concert-details__title">{concert.title || 'Untitled Concert'}</h1>
-
-        <div className="concert-details__metadata">
-          <p className="concert-details__date">
-            <strong>{t('concerts.date')}:</strong> {concert.date}
-          </p>
-          <p className="concert-details__time">
-            <strong>{t('concerts.time')}:</strong> {concert.time}
-          </p>
-          <p className="concert-details__venue">
-            <strong>{t('concerts.venue')}:</strong> {concert.venue}
-          </p>
-          {concert.price && (
-            <p className="concert-details__price">
-              <strong>{t('concerts.price')}:</strong> {concert.price}
+        <span className="concert-details__container">
+          <h1 className="concert-details__title">{concert.title || 'Untitled Concert'}</h1>
+          <div className="concert-details__metadata">
+            <p className="concert-details__date">
+              <strong>{t('concerts.date')}:</strong> {concert.date}
             </p>
-          )}
-        </div>
+            <p className="concert-details__time">
+              <strong>{t('concerts.time')}:</strong> {concert.time}
+            </p>
+            <p className="concert-details__venue">
+              <strong>{t('concerts.venue')}:</strong> {concert.venue}
+            </p>
+            {concert.price && (
+              <p className="concert-details__price">
+                <strong>{t('concerts.price')}:</strong> {concert.price !== '0' ? `${concert.price} €` : `${t('concerts.free')}`}
+              </p>
+            )}
+          </div>
+        </span>
 
         {concert.description && (
-          <div 
-            className="concert-details__description"
-            dangerouslySetInnerHTML={{ __html: concert.description }}
-          />
-        )}
+            <div 
+              className="concert-details__description"
+              dangerouslySetInnerHTML={{ __html: concert.description }}
+            />
+          )}
+
+
 
         {concert.ticketLink && (
           <a 

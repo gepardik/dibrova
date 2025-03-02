@@ -20,6 +20,11 @@ try {
     $messagesStmt = $conn->prepare('SELECT COUNT(*) FROM contact_messages WHERE is_read = FALSE');
     $messagesStmt->execute();
     $unreadMessages = $messagesStmt->fetchColumn();
+    
+    // Количество альбомов
+    $albumsStmt = $conn->prepare('SELECT COUNT(*) FROM albums');
+    $albumsStmt->execute();
+    $albumsCount = $albumsStmt->fetchColumn();
 } catch (PDOException $e) {
     die('Database error: ' . $e->getMessage());
 }
@@ -121,6 +126,10 @@ try {
                 <h3>Непрочитанные сообщения</h3>
                 <p><?php echo $unreadMessages; ?></p>
             </div>
+            <div class="stat-card">
+                <h3>Фотоальбомы</h3>
+                <p><?php echo $albumsCount; ?></p>
+            </div>
         </div>
 
         <div class="actions">
@@ -133,6 +142,11 @@ try {
                 <h3>Сообщения</h3>
                 <p>Просмотр сообщений от посетителей сайта</p>
                 <a href="messages.php">Просмотреть сообщения</a>
+            </div>
+            <div class="action-card">
+                <h3>Фотогалерея</h3>
+                <p>Управление альбомами с фотографиями и видео</p>
+                <a href="albums.php">Управлять галереей</a>
             </div>
         </div>
     </div>

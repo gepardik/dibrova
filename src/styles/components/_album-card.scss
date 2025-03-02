@@ -1,0 +1,74 @@
+@use "../variables" as *;
+
+.album-card {
+  background: $color-white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba($color-black, 0.1);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba($color-black, 0.15);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.3);
+  }
+
+  &__image-container {
+    position: relative;
+    padding-top: 75%; // 4:3 aspect ratio
+    overflow: hidden;
+  }
+
+  &__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover &__image {
+    transform: scale(1.05);
+  }
+
+  &__content {
+    padding: 1rem;
+  }
+
+  &__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__info {
+    color: $color-text-secondary;
+    font-size: 0.9rem;
+  }
+
+  &__count {
+    display: block;
+  }
+}
+
+// Grid layout
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+
+  @media (max-width: $breakpoint-mobile) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+} 

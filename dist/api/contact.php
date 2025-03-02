@@ -6,12 +6,6 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../config.php';
 
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     
@@ -21,11 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $name = htmlspecialchars($data['name']);
-    $email = filter_var($data['email'], FILTER_VALIDATE_EMAIL);
-    $message = htmlspecialchars($data['message']);
+    $name = filter_var($data['name'], FILTER_SANITIZE_STRING);
+    $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
+    $message = filter_var($data['message'], FILTER_SANITIZE_STRING);
 
-    if (!$email) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid email format']);
         exit;
@@ -50,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         mail($to, $subject, $emailBody, $headers);
 
-        echo json_encode(['success' => true, 'message' => 'Message sent successfully']);
+        echo json_encode(['success' => true]);
     } catch (PDOException $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Database error']);

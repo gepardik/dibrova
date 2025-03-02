@@ -8,6 +8,7 @@ const Home = React.lazy(() => import('./pages/Home'));
 const Concerts = React.lazy(() => import('./pages/Concerts'));
 const ConcertDetails = React.lazy(() => import('./pages/ConcertDetails'));
 const Contact = React.lazy(() => import('./pages/Contact'));
+const Gallery = React.lazy(() => import('./pages/Gallery'));
 
 // Loading component
 const Loading = () => (
@@ -30,6 +31,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/concerts" element={<Concerts />} />
             <Route path="/concerts/:id" element={<ConcertDetails />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
           </Routes>
         </Suspense>

@@ -1,9 +1,9 @@
 <?php
-// Локальные настройки для тестирования
+session_start();
 define('DB_HOST', 'srv924.hstgr.io');     // Хост базы данных
-define('DB_USER', 'u540617893_dibrova');  // Имя пользователя базы данных
-define('DB_PASS', 'SolMinor123');         // Пароль базы данных
-define('DB_NAME', 'u540617893_dibrova');  // Имя базы данных
+define('DB_USER', 'u540617893_dibrova');              // Имя пользователя базы данных
+define('DB_PASS', 'SolMinor123');              // Пароль базы данных
+define('DB_NAME', 'u540617893_dibrova');              // Имя базы данных
 
 // Создаем соединение с базой данных
 function getDBConnection() {
@@ -22,9 +22,6 @@ function getDBConnection() {
 
 // Функция для проверки авторизации администратора
 function isAdminLoggedIn() {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
     return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 }
 ?> 

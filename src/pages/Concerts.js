@@ -43,6 +43,7 @@ const Concerts = () => {
 
   return (
     <div className="concerts">
+      <h1 className="concerts__title">{t('concerts.title')}</h1>
       <div className="concerts__tabs">
         <button 
           className={`concerts__tab ${activeTab === 'upcoming' ? 'active' : ''}`}
