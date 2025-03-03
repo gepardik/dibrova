@@ -9,7 +9,7 @@ module.exports = {
     chunkFilename: '[name].[contenthash].js',
     publicPath: '/',
     clean: {
-      keep: /^(api|admin|images|uploads|config\.php|\.htaccess)/,
+      keep: /^(api|admin|images|uploads|config\.php|\.htaccess|htaccess)/,
     }
   },
   optimization: {
