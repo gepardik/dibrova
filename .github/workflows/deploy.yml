@@ -21,11 +21,8 @@ jobs:
           git reset --hard main
           git rm -rf . --quiet
           git checkout main -- dist
-          rsync -a --delete \
-            --exclude 'uploads/**' \
-            --exclude '.DS_Store' \
-            dist/ . || true
+          mv dist/* .
           rm -rf dist
-          git add -A
+          git add .
           git commit -m "Deploy changes" || echo "No changes to deploy"
           git push -f origin deploy

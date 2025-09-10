@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $coverPath = $album['cover_path'];
 
     if ($uploadedCover && $uploadedCover['size'] > 0) {
-        $targetDir = "../../dist/uploads/gallery/covers/";
+        $targetDir = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . "/uploads/gallery/covers/";
         if (!file_exists($targetDir)) {
             mkdir($targetDir, 0777, true);
         }
