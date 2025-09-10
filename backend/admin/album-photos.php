@@ -37,7 +37,7 @@ try {
 
 // Обработка загрузки фотографий
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photos'])) {
-    $upload_dir = '../uploads/gallery/';
+    $upload_dir = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/uploads/gallery/';
     $dirs = ['original', 'medium', 'thumbnails'];
     
     // Создаем директории, если они не существуют
