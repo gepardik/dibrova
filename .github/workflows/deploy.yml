@@ -21,8 +21,8 @@ jobs:
           git reset --hard main
           git rm -rf . --quiet
           git checkout main -- dist
-          mv dist/* .
+          rsync -a --delete dist/ .
           rm -rf dist
-          git add .
+          git add -A
           git commit -m "Deploy changes" || echo "No changes to deploy"
           git push -f origin deploy
