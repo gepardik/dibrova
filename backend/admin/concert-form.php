@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagePath = $concert['image_path'];
 
     if ($uploadedImage && $uploadedImage['size'] > 0) {
-        $targetDir = "../uploads/";
+        $targetDir = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . "/uploads/";
         if (!file_exists($targetDir)) {
             mkdir($targetDir, 0777, true);
         }

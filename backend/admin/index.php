@@ -35,6 +35,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель | DIBROVA</title>
+    <base href="/admin/">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -113,7 +114,7 @@ try {
 <body>
     <header class="header">
         <h1>Админ-панель DIBROVA</h1>
-        <a href="logout.php">Выйти</a>
+        <a href="/admin/logout.php">Выйти</a>
     </header>
 
     <div class="container">
@@ -134,19 +135,19 @@ try {
 
         <div class="actions">
             <div class="action-card">
-                <h3>Управление концертами</h3>
-                <p>Добавление, редактирование и удаление концертов</p>
-                <a href="concerts.php">Управлять концертами</a>
+                <h3>Концерты</h3>
+                <p>Управление концертами</p>
+                <a href="/admin/concerts.php">Перейти →</a>
             </div>
             <div class="action-card">
                 <h3>Сообщения</h3>
-                <p>Просмотр сообщений от посетителей сайта</p>
-                <a href="messages.php">Просмотреть сообщения</a>
+                <p>Просмотр сообщений</p>
+                <a href="/admin/messages.php">Перейти →</a>
             </div>
             <div class="action-card">
-                <h3>Фотогалерея</h3>
-                <p>Управление альбомами с фотографиями и видео</p>
-                <a href="albums.php">Управлять галереей</a>
+                <h3>Галерея</h3>
+                <p>Управление альбомами</p>
+                <a href="/admin/albums.php">Перейти →</a>
             </div>
         </div>
     </div>

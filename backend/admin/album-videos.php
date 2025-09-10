@@ -73,9 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Видео альбома - DIBROVA Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Видео альбома | DIBROVA</title>
+    <base href="/admin/">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -162,61 +165,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="admin-header">
-        <h1>Видео альбома "<?php echo htmlspecialchars($album['title_' . DEFAULT_LANGUAGE]); ?>"</h1>
-        <a href="albums.php" class="btn" style="background-color: #6c757d;">← Назад</a>
-    </div>
-    
-    <div class="admin-content">
-        <form method="POST" class="add-video-form">
+    <header class="header">
+        <h1>Видео альбома: <?php echo htmlspecialchars($album['title_ru']); ?></h1>
+        <a href="/admin/albums.php">← Назад</a>
+    </header>
+
+    <div class="container">
+        <div class="form-section">
             <h2>Добавить видео</h2>
-            <div class="form-group">
-                <label for="youtube_url">URL видео на YouTube</label>
-                <input type="text" id="youtube_url" name="youtube_url" required 
-                       placeholder="https://www.youtube.com/watch?v=...">
-            </div>
-            
-            <div class="form-group">
-                <label for="title_en">Название (EN)</label>
-                <input type="text" id="title_en" name="title_en" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="title_uk">Название (UK)</label>
-                <input type="text" id="title_uk" name="title_uk" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="title_ru">Название (RU)</label>
-                <input type="text" id="title_ru" name="title_ru" required>
-            </div>
-            
-            <button type="submit" class="btn">Добавить видео</button>
-        </form>
-        
-        <?php if (empty($videos)): ?>
-            <p>В альбоме пока нет видео.</p>
-        <?php else: ?>
-            <div class="videos-grid">
-                <?php foreach ($videos as $video): ?>
-                    <div class="video-item">
-                        <div class="video-preview">
-                            <iframe src="https://www.youtube.com/embed/<?php echo htmlspecialchars($video['youtube_id']); ?>" 
-                                    allowfullscreen></iframe>
+            <form method="POST">
+                <div class="form-group">
+                    <label for="youtube_url">Ссылка на YouTube видео</label>
+                    <input type="text" id="youtube_url" name="youtube_url" required>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <span class="language-label">RU</span>
+                            <label for="title_ru">Название на русском</label>
+                            <input type="text" id="title_ru" name="title_ru" required>
                         </div>
-                        <div class="video-title">
-                            <?php echo htmlspecialchars($video['title_' . DEFAULT_LANGUAGE]); ?>
-                        </div>
-                        <div class="video-actions">
-                            <a href="video-delete.php?id=<?php echo $video['id']; ?>&album_id=<?php echo $album_id; ?>" 
-                               class="btn" 
-                               style="background-color: #dc3545;"
-                               onclick="return confirm('Вы уверены, что хотите удалить это видео?')">Удалить</a>
+                        <div>
+                            <span class="language-label">ET</span>
+                            <label for="title_et">Название на эстонском</label>
+                            <input type="text" id="title_et" name="title_et" required>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <span class="language-label">EN</span>
+                            <label for="title_en">Название на английском</label>
+                            <input type="text" id="title_en" name="title_en" required>
+                        </div>
+                        <div>
+                            <span class="language-label">UK</span>
+                            <label for="title_uk">Название на украинском</label>
+                            <input type="text" id="title_uk" name="title_uk" required>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Добавить</button>
+            </form>
+        </div>
+
+        <div class="videos-grid">
+            <?php foreach ($videos as $video): ?>
+                <div class="video-item">
+                    <div class="video-preview">
+                        <img src="https://img.youtube.com/vi/<?php echo htmlspecialchars($video['youtube_id']); ?>/mqdefault.jpg" alt="Превью видео">
+                    </div>
+                    <div class="video-info">
+                        <h3><?php echo htmlspecialchars($video['title_ru']); ?></h3>
+                        <div class="video-actions">
+                            <a href="https://www.youtube.com/watch?v=<?php echo htmlspecialchars($video['youtube_id']); ?>" target="_blank" class="btn">Смотреть</a>
+                            <a href="/admin/video-delete.php?id=<?php echo $video['id']; ?>&album_id=<?php echo $album_id; ?>" 
+                               class="btn btn-danger" 
+                               onclick="return confirm('Вы уверены, что хотите удалить это видео?');">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
 </body>
 </html> 

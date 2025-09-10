@@ -9,176 +9,310 @@ if (!isAdminLoggedIn()) {
 
 $album = [
     'id' => null,
+    'title_ru' => '',
+    'title_et' => '',
     'title_en' => '',
     'title_uk' => '',
-    'title_ru' => '',
     'cover_path' => ''
 ];
 
-// Если это редактирование существующего альбома
+$isEdit = false;
+$error = '';
+$success = '';
+
+// Если это редактирование, загружаем данные альбома
 if (isset($_GET['id'])) {
     try {
         $conn = getDBConnection();
-        $stmt = $conn->prepare("SELECT * FROM albums WHERE id = ?");
+        $stmt = $conn->prepare('SELECT * FROM albums WHERE id = ?');
         $stmt->execute([$_GET['id']]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($result) {
-            $album = $result;
+        $loadedAlbum = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($loadedAlbum) {
+            $album = $loadedAlbum;
+            $isEdit = true;
         }
     } catch (PDOException $e) {
-        die('Database error: ' . $e->getMessage());
+        $error = 'Ошибка загрузки данных альбома';
     }
 }
 
 // Обработка отправки формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title_en = $_POST['title_en'] ?? '';
-    $title_uk = $_POST['title_uk'] ?? '';
-    $title_ru = $_POST['title_ru'] ?? '';
-    
     // Загрузка обложки
-    $cover_path = $album['cover_path'];
-    if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
-        $upload_dir = '../../uploads/gallery/covers/';
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+    $uploadedCover = $_FILES['cover'] ?? null;
+    $coverPath = $album['cover_path'];
+
+    if ($uploadedCover && $uploadedCover['size'] > 0) {
+        $targetDir = "../../dist/uploads/gallery/covers/";
+        if (!file_exists($targetDir)) {
+            mkdir($targetDir, 0777, true);
         }
-        
-        $file_extension = strtolower(pathinfo($_FILES['cover']['name'], PATHINFO_EXTENSION));
-        $new_filename = uniqid() . '.' . $file_extension;
-        $upload_path = $upload_dir . $new_filename;
-        
-        if (move_uploaded_file($_FILES['cover']['tmp_name'], $upload_path)) {
+
+        $imageFileType = strtolower(pathinfo($uploadedCover['name'], PATHINFO_EXTENSION));
+        $newFileName = uniqid() . '.' . $imageFileType;
+        $targetFile = $targetDir . $newFileName;
+
+        // Debug information
+        error_log("Processing file upload:");
+        error_log("Target directory: " . $targetDir);
+        error_log("New filename: " . $newFileName);
+        error_log("Target file: " . $targetFile);
+
+        if ($imageFileType != "jpg" && $imageFileType != "jpeg" && $imageFileType != "png") {
+            $error = "Разрешены только JPG, JPEG и PNG файлы.";
+        } elseif ($uploadedCover['size'] > 5000000) {
+            $error = "Файл слишком большой. Максимальный размер 5MB.";
+        } elseif (move_uploaded_file($uploadedCover['tmp_name'], $targetFile)) {
             // Если это редактирование и была старая обложка, удаляем её
-            if ($cover_path && file_exists('../../' . $cover_path)) {
-                unlink('../../' . $cover_path);
+            if ($coverPath && file_exists("../" . $coverPath)) {
+                unlink("../" . $coverPath);
             }
-            $cover_path = 'uploads/gallery/covers/' . $new_filename;
+            // Сохраняем путь относительно корня сайта
+            $coverPath = "uploads/gallery/covers/" . $newFileName;
+            error_log("File uploaded successfully. Cover path set to: " . $coverPath);
+        } else {
+            $error = "Ошибка загрузки файла.";
+            error_log("Failed to move uploaded file. Upload error code: " . $uploadedCover['error']);
         }
     }
-    
-    try {
-        $conn = getDBConnection();
-        if ($album['id']) {
-            // Обновление существующего альбома
-            $stmt = $conn->prepare("
-                UPDATE albums 
-                SET title_en = ?, title_uk = ?, title_ru = ?, cover_path = ?, updated_at = NOW()
-                WHERE id = ?
-            ");
-            $stmt->execute([$title_en, $title_uk, $title_ru, $cover_path, $album['id']]);
-        } else {
-            // Создание нового альбома
-            $stmt = $conn->prepare("
-                INSERT INTO albums (title_en, title_uk, title_ru, cover_path, created_at, updated_at)
-                VALUES (?, ?, ?, ?, NOW(), NOW())
-            ");
-            $stmt->execute([$title_en, $title_uk, $title_ru, $cover_path]);
+
+    if (empty($error)) {
+        try {
+            $conn = getDBConnection();
+            
+            // Debug information
+            error_log("Preparing to save album data:");
+            error_log("Cover path before save: " . $coverPath);
+            
+            if ($isEdit) {
+                $sql = "UPDATE albums SET 
+                    title_ru = :title_ru,
+                    title_et = :title_et,
+                    title_en = :title_en,
+                    title_uk = :title_uk,
+                    cover_path = :cover_path,
+                    updated_at = :updated_at
+                    WHERE id = :id";
+                $params = [
+                    'title_ru' => $_POST['title_ru'],
+                    'title_et' => $_POST['title_et'],
+                    'title_en' => $_POST['title_en'],
+                    'title_uk' => $_POST['title_uk'],
+                    'cover_path' => $coverPath,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                    'id' => $album['id']
+                ];
+            } else {
+                $sql = "INSERT INTO albums (
+                    title_ru, title_et, title_en, title_uk,
+                    cover_path, created_at, updated_at
+                ) VALUES (
+                    :title_ru, :title_et, :title_en, :title_uk,
+                    :cover_path, :created_at, :updated_at
+                )";
+                $params = [
+                    'title_ru' => $_POST['title_ru'],
+                    'title_et' => $_POST['title_et'],
+                    'title_en' => $_POST['title_en'],
+                    'title_uk' => $_POST['title_uk'],
+                    'cover_path' => $coverPath,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+            }
+
+            // Debug information
+            error_log("Executing SQL query:");
+            error_log($sql);
+
+            $stmt = $conn->prepare($sql);
+            if (!$stmt->execute($params)) {
+                error_log("Database error: " . implode(", ", $stmt->errorInfo()));
+                throw new PDOException("Failed to execute query");
+            }
+
+            $success = 'Альбом успешно ' . ($isEdit ? 'обновлен' : 'создан');
+            
+            // Debug information after successful save
+            error_log("Album saved successfully. " . ($isEdit ? "Updated" : "Created new") . " album.");
+            
+            if (!$isEdit) {
+                // Очищаем форму после успешного добавления
+                $album = array_fill_keys(array_keys($album), '');
+            }
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            $error = 'Ошибка сохранения данных: ' . $e->getMessage();
         }
-        
-        header('Location: albums.php');
-        exit;
-    } catch (PDOException $e) {
-        die('Database error: ' . $e->getMessage());
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title><?php echo $album['id'] ? 'Редактировать' : 'Добавить'; ?> альбом - DIBROVA Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $isEdit ? 'Редактирование' : 'Создание'; ?> альбома | DIBROVA</title>
+    <base href="/admin/">
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: #D9D9D9;
         }
-        .admin-header {
+        .header {
+            background-color: #1C2824;
+            color: white;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
         }
-        .admin-content {
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .form-container {
             background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 800px;
-            margin: 0 auto;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
         }
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #1C2824;
+            font-weight: 500;
         }
         input[type="text"],
         input[type="file"] {
             width: 100%;
-            padding: 8px;
+            padding: 0.8rem;
             border: 1px solid #ddd;
             border-radius: 4px;
-            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        .language-label {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
         }
         .btn {
-            padding: 10px 20px;
-            background-color: #007bff;
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: #536C63;
             color: white;
             text-decoration: none;
             border-radius: 4px;
             border: none;
             cursor: pointer;
+            font-size: 1rem;
         }
-        .current-cover {
-            margin-top: 10px;
+        .btn:hover {
+            background-color: #3f524a;
         }
-        .current-cover img {
-            max-width: 200px;
-            border-radius: 4px;
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .error {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+        .success {
+            color: #28a745;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
-    <div class="admin-header">
-        <h1><?php echo $album['id'] ? 'Редактировать' : 'Добавить'; ?> альбом</h1>
-        <a href="albums.php" class="btn" style="background-color: #6c757d;">← Назад</a>
-    </div>
-    
-    <div class="admin-content">
-        <form method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="title_en">Название (EN)</label>
-                <input type="text" id="title_en" name="title_en" value="<?php echo htmlspecialchars($album['title_en']); ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="title_uk">Название (UK)</label>
-                <input type="text" id="title_uk" name="title_uk" value="<?php echo htmlspecialchars($album['title_uk']); ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="title_ru">Название (RU)</label>
-                <input type="text" id="title_ru" name="title_ru" value="<?php echo htmlspecialchars($album['title_ru']); ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="cover">Обложка альбома</label>
-                <input type="file" id="cover" name="cover" accept="image/*">
-                <?php if ($album['cover_path']): ?>
-                    <div class="current-cover">
-                        <p>Текущая обложка:</p>
-                        <img src="/<?php echo htmlspecialchars($album['cover_path']); ?>" alt="Обложка альбома">
+    <header class="header">
+        <h1><?php echo $isEdit ? 'Редактирование' : 'Создание'; ?> альбома</h1>
+        <a href="/admin/albums.php">← Назад</a>
+    </header>
+
+    <div class="container">
+        <div class="form-container">
+            <?php if ($error): ?>
+                <div class="error"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+            <?php if ($success): ?>
+                <div class="success"><?php echo htmlspecialchars($success); ?></div>
+            <?php endif; ?>
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="cover">Обложка альбома</label>
+                    <input type="file" id="cover" name="cover" accept="image/jpeg,image/png">
+                    <?php if ($album['cover_path']): ?>
+                        <div class="current-cover">
+                            <p>Текущая обложка:</p>
+                            <img src="/<?php echo htmlspecialchars($album['cover_path']); ?>" alt="Обложка альбома">
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <span class="language-label">RU</span>
+                            <label for="title_ru">Название на русском</label>
+                            <input type="text" id="title_ru" name="title_ru" value="<?php echo htmlspecialchars($album['title_ru']); ?>" required>
+                        </div>
+                        <div>
+                            <span class="language-label">ET</span>
+                            <label for="title_et">Название на эстонском</label>
+                            <input type="text" id="title_et" name="title_et" value="<?php echo htmlspecialchars($album['title_et']); ?>" required>
+                        </div>
                     </div>
-                <?php endif; ?>
-            </div>
-            
-            <button type="submit" class="btn">Сохранить</button>
-        </form>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <span class="language-label">EN</span>
+                            <label for="title_en">Название на английском</label>
+                            <input type="text" id="title_en" name="title_en" value="<?php echo htmlspecialchars($album['title_en']); ?>" required>
+                        </div>
+                        <div>
+                            <span class="language-label">UK</span>
+                            <label for="title_uk">Название на украинском</label>
+                            <input type="text" id="title_uk" name="title_uk" value="<?php echo htmlspecialchars($album['title_uk']); ?>" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn">Сохранить</button>
+                    <a href="/admin/albums.php" class="btn btn-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html> 

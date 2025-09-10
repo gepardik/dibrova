@@ -37,7 +37,7 @@ try {
 
 // Обработка загрузки фотографий
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photos'])) {
-    $upload_dir = '../../uploads/gallery/';
+    $upload_dir = '../uploads/gallery/';
     $dirs = ['original', 'medium', 'thumbnails'];
     
     // Создаем директории, если они не существуют
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photos'])) {
                 // Создаем миниатюру (200px по большей стороне)
                 resizeImage($original_path, $thumb_path, 200);
                 
-                // Сохраняем в базу
+                // Сохраняем в базу с ведущим слешем
                 $stmt = $conn->prepare("
                     INSERT INTO photos (album_id, original_path, medium_path, thumbnail_path, position, created_at)
                     VALUES (?, ?, ?, ?, ?, NOW())
@@ -133,9 +133,13 @@ function resizeImage($source_path, $target_path, $max_size) {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Фотографии альбома - DIBROVA Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фотографии альбома | DIBROVA</title>
+    <base href="/admin/">
+    <link rel="stylesheet" href="/photoswipe/photoswipe.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -172,6 +176,7 @@ function resizeImage($source_path, $target_path, $max_size) {
         }
         .photo-item {
             position: relative;
+            cursor: pointer;
         }
         .photo-item img {
             width: 100%;
@@ -208,39 +213,170 @@ function resizeImage($source_path, $target_path, $max_size) {
             border-radius: 4px;
             cursor: pointer;
         }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            margin: auto;
+            display: block;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #fff;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+        .pswp {
+            --pswp-bg: rgba(0, 0, 0, 0.9);
+            --pswp-placeholder-bg: #222;
+            position: fixed;
+            z-index: 9999;
+        }
+        
+        .photo-item a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
-    <div class="admin-header">
-        <h1>Фотографии альбома "<?php echo htmlspecialchars($album['title_' . DEFAULT_LANGUAGE]); ?>"</h1>
-        <a href="albums.php" class="btn" style="background-color: #6c757d;">← Назад</a>
+    <header class="header">
+        <h1>Фотографии альбома: <?php echo htmlspecialchars($album['title_ru']); ?></h1>
+        <a href="/admin/albums.php">← Назад</a>
+    </header>
+
+    <div class="container">
+        <div class="upload-section">
+            <h2>Загрузить фотографии</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="photos[]" multiple accept="image/jpeg,image/png" required>
+                <button type="submit" class="btn">Загрузить</button>
+            </form>
+        </div>
+
+        <div class="photos-grid" id="gallery">
+            <?php foreach ($photos as $photo): ?>
+                <div class="photo-item">
+                    <a href="/<?php echo htmlspecialchars($photo['original_path']); ?>"
+                       data-pswp-width="<?php list($width, $height) = getimagesize($_SERVER['DOCUMENT_ROOT'] . '/' . $photo['original_path']); echo $width; ?>"
+                       data-pswp-height="<?php echo $height; ?>">
+                        <img src="/<?php echo htmlspecialchars($photo['medium_path']); ?>" alt="Фото">
+                    </a>
+                    <div class="photo-actions">
+                        <a href="/admin/photo-delete.php?id=<?php echo $photo['id']; ?>&album_id=<?php echo $album_id; ?>" 
+                           class="btn btn-danger" 
+                           onclick="return confirm('Вы уверены, что хотите удалить это фото?');">Удалить</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
-    
-    <div class="admin-content">
-        <form method="POST" enctype="multipart/form-data" class="upload-form">
-            <label for="photos" class="upload-label">
-                + Загрузить фотографии
-            </label>
-            <input type="file" id="photos" name="photos[]" accept="image/*" multiple onchange="this.form.submit()">
-        </form>
-        
-        <?php if (empty($photos)): ?>
-            <p>В альбоме пока нет фотографий.</p>
-        <?php else: ?>
-            <div class="photos-grid">
-                <?php foreach ($photos as $photo): ?>
-                    <div class="photo-item">
-                        <img src="/<?php echo htmlspecialchars($photo['thumbnail_path']); ?>" alt="Фото">
-                        <div class="photo-actions">
-                            <a href="photo-delete.php?id=<?php echo $photo['id']; ?>&album_id=<?php echo $album_id; ?>" 
-                               class="btn" 
-                               style="background-color: #dc3545;"
-                               onclick="return confirm('Вы уверены, что хотите удалить это фото?')">Удалить</a>
+
+    <!-- PhotoSwipe template -->
+    <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="pswp__bg"></div>
+        <div class="pswp__scroll-wrap">
+            <div class="pswp__container">
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+            </div>
+            <div class="pswp__ui pswp__ui--hidden">
+                <div class="pswp__top-bar">
+                    <div class="pswp__counter"></div>
+                    <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                    <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                    <div class="pswp__preloader">
+                        <div class="pswp__preloader__icn">
+                            <div class="pswp__preloader__cut">
+                                <div class="pswp__preloader__donut"></div>
+                            </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
+                </div>
+                <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+                <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
+                <div class="pswp__caption">
+                    <div class="pswp__caption__center"></div>
+                </div>
             </div>
-        <?php endif; ?>
+        </div>
     </div>
+
+    <script src="/photoswipe/umd/photoswipe.umd.js"></script>
+    <script src="/photoswipe/umd/photoswipe-lightbox.umd.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lightbox = new PhotoSwipeLightbox({
+                gallery: '#gallery',
+                children: 'a',
+                pswpModule: PhotoSwipe,
+                
+                // Basic options
+                showHideAnimationType: 'fade',
+                showAnimationDuration: 300,
+                hideAnimationDuration: 300,
+                
+                // UI Elements
+                arrowKeys: true,
+                imageClickAction: 'zoom',
+                tapAction: 'toggle-controls',
+                
+                // Show UI controls
+                showPrevNextButtons: true,
+                showZoomButton: true,
+                showCounter: true,
+                
+                // Background opacity
+                bgOpacity: 0.9,
+                
+                // Padding
+                padding: { top: 20, bottom: 20, left: 20, right: 20 },
+                
+                // Error message
+                errorMsg: 'Изображение не может быть загружено'
+            });
+
+            // Handle image loading
+            lightbox.on('contentLoad', (e) => {
+                const { content } = e;
+                if (content.type === 'image') {
+                    const img = new Image();
+                    img.onload = () => {
+                        content.width = img.naturalWidth;
+                        content.height = img.naturalHeight;
+                    };
+                    img.src = content.data.src;
+                }
+            });
+
+            lightbox.init();
+        });
+    </script>
 </body>
 </html> 

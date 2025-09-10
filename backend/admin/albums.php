@@ -29,6 +29,7 @@ try {
 <html>
 <head>
     <title>Управление альбомами - DIBROVA Admin</title>
+    <base href="/admin/">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -84,8 +85,8 @@ try {
     <div class="admin-header">
         <h1>Управление альбомами</h1>
         <div>
-            <a href="index.php" class="btn" style="background-color: #6c757d;">← Назад</a>
-            <a href="album-form.php" class="btn">+ Добавить альбом</a>
+            <a href="/admin/index.php" class="btn" style="background-color: #6c757d;">← Назад</a>
+            <a href="/admin/album-form.php" class="btn">+ Добавить альбом</a>
         </div>
     </div>
     
@@ -111,14 +112,12 @@ try {
                             <td><?php echo htmlspecialchars($album['title_uk']); ?></td>
                             <td><?php echo $album['photos_count']; ?></td>
                             <td><?php echo $album['videos_count']; ?></td>
-                            <td><?php echo date('d.m.Y H:i', strtotime($album['created_at'])); ?></td>
+                            <td><?php echo date('d.m.Y', strtotime($album['created_at'])); ?></td>
                             <td class="action-buttons">
-                                <a href="album-form.php?id=<?php echo $album['id']; ?>" class="btn">Редактировать</a>
-                                <a href="album-photos.php?id=<?php echo $album['id']; ?>" class="btn">Фото</a>
-                                <a href="album-videos.php?id=<?php echo $album['id']; ?>" class="btn">Видео</a>
-                                <a href="album-delete.php?id=<?php echo $album['id']; ?>" 
-                                   class="btn btn-danger" 
-                                   onclick="return confirm('Вы уверены, что хотите удалить этот альбом?')">Удалить</a>
+                                <a href="/admin/album-photos.php?id=<?php echo $album['id']; ?>" class="btn">Фото</a>
+                                <a href="/admin/album-videos.php?id=<?php echo $album['id']; ?>" class="btn">Видео</a>
+                                <a href="/admin/album-form.php?id=<?php echo $album['id']; ?>" class="btn">Изменить</a>
+                                <a href="/admin/album-delete.php?id=<?php echo $album['id']; ?>" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите удалить этот альбом?');">Удалить</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
